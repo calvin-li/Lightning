@@ -24,6 +24,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <receiver android:name=".batteryInfoReceiver">
+            <intent-filter>
+                <action android:name="Intent.ACTION_BATTERY_CHANGED"/>
+            </intent-filter>
+        </receiver>
+
         <service
             android:name=".BatteryMonitorService"
             android:exported="false"/>
