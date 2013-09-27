@@ -9,11 +9,15 @@ import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.BatteryManager;
 
+import java.util.Calendar;
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class BatteryMonitorService extends IntentService {
 
     private PendingIntent pIntent;
     private Intent battery;
-
+    private Timer timer;
 
     public BatteryMonitorService(){
         super("BatteryMonitorService");
@@ -24,18 +28,14 @@ public class BatteryMonitorService extends IntentService {
 
         pIntent = workIntent.getParcelableExtra("pIntent");
 
-        while(true){
-            batteryCheck();
-            try{
-                Thread.sleep(MainActivity.checkDelay);
-            } catch(InterruptedException i){}//catch
-        }//while
+        timer = new Timer(true);
+        timer.schedule(new batteryTask(), 0, MainActivity.checkDelay);
+
 
     }//onHandleIntent
 
     @Override
     public void onDestroy(){
-        super.onDestroy();
         Notification notification = new Notification.Builder(this)
                 .setSmallIcon(R.drawable.ic_launcher)
                 .setContentTitle("Service Killed!")
@@ -44,6 +44,7 @@ public class BatteryMonitorService extends IntentService {
                 .setVibrate(MainActivity.vibrate)
                 .setLights(Color.YELLOW, 1000, 1000)
                 .build();
+        super.onDestroy();
 
         NotificationManager manager =
                 (NotificationManager) this.getSystemService(NOTIFICATION_SERVICE);
@@ -58,7 +59,15 @@ public class BatteryMonitorService extends IntentService {
         int  scale= battery.getIntExtra(BatteryManager.EXTRA_SCALE,-1);
         double fullPower = MainActivity.fullModifier * scale;
 
-        System.out.println(level + " " + scale + " " + fullPower + " " + MainActivity.full);
+        Calendar cal = Calendar.getInstance();
+        String time =
+                cal.get(Calendar.HOUR_OF_DAY) +
+                ":" + cal.get(Calendar.MINUTE) +
+                ":" + cal.get(Calendar.SECOND);
+
+        MainActivity.metrics =
+                time + " " + level + " " + scale + " " + fullPower + " " + MainActivity.full;
+        System.out.println(MainActivity.metrics);
 
         if(MainActivity.full && level < fullPower)
             MainActivity.full = false;
@@ -70,7 +79,6 @@ public class BatteryMonitorService extends IntentService {
         else{
             Notification notification = new Notification.Builder(this)
                     .setPriority(Notification.PRIORITY_HIGH)
-                    .setLights(Color.DKGRAY, 1000, 10000)
                     .build();
             NotificationManager manager =
                     (NotificationManager) this.getSystemService(NOTIFICATION_SERVICE);
@@ -80,4 +88,11 @@ public class BatteryMonitorService extends IntentService {
         return;
     }//batteryCheck
 
+    class batteryTask extends TimerTask{
+
+        @Override
+        public void run() {
+            batteryCheck();
+        }
+    }//batteryTask
 }//BatteryMonitorService
