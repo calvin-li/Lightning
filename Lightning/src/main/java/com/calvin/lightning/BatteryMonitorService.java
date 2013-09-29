@@ -1,13 +1,16 @@
 package com.calvin.lightning;
 
+import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.BatteryManager;
+import android.os.SystemClock;
 
 import java.util.Calendar;
 import java.util.Timer;
@@ -25,31 +28,11 @@ public class BatteryMonitorService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent workIntent) {
-
         pIntent = workIntent.getParcelableExtra("pIntent");
 
-        timer = new Timer(true);
-        timer.schedule(new batteryTask(), 0, MainActivity.checkDelay);
-
-
+        batteryCheck();
     }//onHandleIntent
 
-    @Override
-    public void onDestroy(){
-        Notification notification = new Notification.Builder(this)
-                .setSmallIcon(R.drawable.ic_launcher)
-                .setContentTitle("Service Killed!")
-                .setContentIntent(pIntent)
-                .setPriority(Notification.PRIORITY_HIGH)
-                .setVibrate(MainActivity.vibrate)
-                .setLights(Color.YELLOW, 1000, 1000)
-                .build();
-        super.onDestroy();
-
-        NotificationManager manager =
-                (NotificationManager) this.getSystemService(NOTIFICATION_SERVICE);
-        manager.notify(0, notification);
-    }//onDestroy
     void batteryCheck(){
 
         battery = this.registerReceiver(null,
@@ -75,15 +58,6 @@ public class BatteryMonitorService extends IntentService {
         if(!MainActivity.full && level >= fullPower){
             MainActivity.batteryFull(pIntent, this);
         }//if
-
-        else{
-            Notification notification = new Notification.Builder(this)
-                    .setPriority(Notification.PRIORITY_HIGH)
-                    .build();
-            NotificationManager manager =
-                    (NotificationManager) this.getSystemService(NOTIFICATION_SERVICE);
-            manager.notify(0, notification);
-        }
 
         return;
     }//batteryCheck
