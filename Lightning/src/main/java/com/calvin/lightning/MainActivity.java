@@ -5,13 +5,12 @@ import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
+import android.os.BatteryManager;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.widget.TextView;
 
 public class MainActivity extends Activity {
@@ -21,11 +20,12 @@ public class MainActivity extends Activity {
     static long[] vibrate = new long[]{100, 500, 500, 500};
     static double fullModifier = 1.0;
     static String metrics = "";
-    protected static int checkDelay = 10000;
+    static AlarmManager am;
 
-    private AlarmManager am;
-    private PendingIntent pIntent;
-    private TextView scouter;
+    protected static int checkDelay = 5000;
+
+    protected PendingIntent pIntent;
+    protected PendingIntent alarmIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,10 +33,24 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         pIntent = PendingIntent.getActivity(this, 0, this.getIntent(), 0);
+        Intent serviceIntent = new Intent(this, BatteryMonitorService.class);
+        serviceIntent.putExtra("pIntent",pIntent);
+        serviceIntent.putExtra("alarmIntent",alarmIntent);
+        alarmIntent = PendingIntent.getService(this, 0, serviceIntent, 0);
 
-        pluggedReceiver plugged = new pluggedReceiver();
-        registerReceiver(plugged,
-                new IntentFilter(Intent.ACTION_POWER_DISCONNECTED));
+        Intent battery = this.registerReceiver(null,
+                new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+        int charging = battery.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
+
+        if(charging == 0){
+            pluggedReceiver plugged = new pluggedReceiver();
+            registerReceiver(plugged,
+                    new IntentFilter(pluggedReceiver.filter));
+        }//if
+
+        else{
+            pluggedReceiver.charging(this);
+        }//else
 
     }//OnCreate
 
@@ -44,9 +58,7 @@ public class MainActivity extends Activity {
     protected void onResume(){
         super.onResume();
 
-        scouter = (TextView)findViewById(R.id.scouter);
-        scouter.setText(metrics);
-
+        ((TextView) findViewById(R.id.scouter)).setText(metrics);
     }//onResume
 
     static void batteryFull(PendingIntent pIntent, Context context){
@@ -65,21 +77,5 @@ public class MainActivity extends Activity {
                 (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
         manager.notify(0, notification);
     }//batteryFull
-
-    private class pluggedReceiver extends BroadcastReceiver{
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Intent serviceIntent = new Intent(context, BatteryMonitorService.class);
-            serviceIntent.putExtra("pIntent",pIntent);
-            PendingIntent alarmIntent = PendingIntent.getService(context, 0, serviceIntent, 0);
-
-            am = (AlarmManager)(context.getSystemService(Context.ALARM_SERVICE));
-            am.setRepeating(
-                    AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                    SystemClock.elapsedRealtime(),
-                    checkDelay,
-                    alarmIntent);
-        }//onReceive
-    }//pluggedReceiver
 
 }//MainActivity

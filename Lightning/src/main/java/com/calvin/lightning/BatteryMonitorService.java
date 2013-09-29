@@ -1,26 +1,17 @@
 package com.calvin.lightning;
 
-import android.app.AlarmManager;
 import android.app.IntentService;
-import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Color;
 import android.os.BatteryManager;
-import android.os.SystemClock;
-
 import java.util.Calendar;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class BatteryMonitorService extends IntentService {
 
     private PendingIntent pIntent;
+    private PendingIntent alarmIntent;
     private Intent battery;
-    private Timer timer;
 
     public BatteryMonitorService(){
         super("BatteryMonitorService");
@@ -29,6 +20,7 @@ public class BatteryMonitorService extends IntentService {
     @Override
     protected void onHandleIntent(Intent workIntent) {
         pIntent = workIntent.getParcelableExtra("pIntent");
+        alarmIntent = workIntent.getParcelableExtra("alarmIntent");
 
         batteryCheck();
     }//onHandleIntent
@@ -55,18 +47,10 @@ public class BatteryMonitorService extends IntentService {
         if(MainActivity.full && level < fullPower)
             MainActivity.full = false;
 
-        if(!MainActivity.full && level >= fullPower){
+        else if(!MainActivity.full && level >= fullPower){
             MainActivity.batteryFull(pIntent, this);
+            MainActivity.am.cancel(alarmIntent);
         }//if
-
-        return;
     }//batteryCheck
 
-    class batteryTask extends TimerTask{
-
-        @Override
-        public void run() {
-            batteryCheck();
-        }
-    }//batteryTask
 }//BatteryMonitorService
