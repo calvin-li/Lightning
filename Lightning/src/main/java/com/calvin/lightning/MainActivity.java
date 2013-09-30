@@ -11,21 +11,22 @@ import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.BatteryManager;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.widget.TextView;
 
 public class MainActivity extends Activity {
 
-    static boolean full = false;
+    static boolean full = true;
     static int color = Color.MAGENTA;
     static long[] vibrate = new long[]{100, 500, 500, 500};
     static double fullModifier = 1.0;
     static String metrics = "";
     static AlarmManager am;
+    static PendingIntent alarmIntent;
 
     protected static int checkDelay = 5000;
 
     protected PendingIntent pIntent;
-    protected PendingIntent alarmIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,23 +35,20 @@ public class MainActivity extends Activity {
 
         pIntent = PendingIntent.getActivity(this, 0, this.getIntent(), 0);
         Intent serviceIntent = new Intent(this, BatteryMonitorService.class);
-        serviceIntent.putExtra("pIntent",pIntent);
-        serviceIntent.putExtra("alarmIntent",alarmIntent);
         alarmIntent = PendingIntent.getService(this, 0, serviceIntent, 0);
+        serviceIntent.putExtra("alarmIntent",alarmIntent);
+        serviceIntent.putExtra("pIntent",pIntent);
 
-        Intent battery = this.registerReceiver(null,
-                new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
-        int charging = battery.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
-
-        if(charging == 0){
-            pluggedReceiver plugged = new pluggedReceiver();
-            registerReceiver(plugged,
-                    new IntentFilter(pluggedReceiver.filter));
+        if(alarmIntent != null && am != null){
+            am.cancel(alarmIntent);
         }//if
 
-        else{
-            pluggedReceiver.charging(this);
-        }//else
+        am = (AlarmManager)(this.getSystemService(Context.ALARM_SERVICE));
+        am.setRepeating(
+                AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                SystemClock.elapsedRealtime(),
+                checkDelay,
+                alarmIntent);
 
     }//OnCreate
 

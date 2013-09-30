@@ -10,7 +10,6 @@ import java.util.Calendar;
 public class BatteryMonitorService extends IntentService {
 
     private PendingIntent pIntent;
-    private PendingIntent alarmIntent;
     private Intent battery;
 
     public BatteryMonitorService(){
@@ -20,7 +19,6 @@ public class BatteryMonitorService extends IntentService {
     @Override
     protected void onHandleIntent(Intent workIntent) {
         pIntent = workIntent.getParcelableExtra("pIntent");
-        alarmIntent = workIntent.getParcelableExtra("alarmIntent");
 
         batteryCheck();
     }//onHandleIntent
@@ -49,7 +47,6 @@ public class BatteryMonitorService extends IntentService {
 
         else if(!MainActivity.full && level >= fullPower){
             MainActivity.batteryFull(pIntent, this);
-            MainActivity.am.cancel(alarmIntent);
         }//if
     }//batteryCheck
 
