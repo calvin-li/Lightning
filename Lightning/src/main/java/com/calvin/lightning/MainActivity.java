@@ -12,12 +12,18 @@ import android.graphics.Color;
 import android.os.BatteryManager;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 public class MainActivity extends Activity {
 
     static boolean full = true;
-    static int color = Color.MAGENTA;
+    static String[] color = new String[]{
+        "White", "Yellow", "Green", "Cyan", "Blue",
+        "Magenta", "Red", "Light Gray", "Gray", "Dark Gray"
+    };
+    static int colorNumber;
     static long[] vibrate = new long[]{100, 500, 500, 500};
     static double fullModifier = 1.0;
     static String metrics = "";
@@ -39,6 +45,13 @@ public class MainActivity extends Activity {
         serviceIntent.putExtra("alarmIntent",alarmIntent);
         serviceIntent.putExtra("pIntent",pIntent);
 
+        //Layout elements here
+        Spinner spinner = (Spinner) findViewById(R.id.colorSpinner);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.colors_array, R.layout.spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+
         if(alarmIntent != null && am != null){
             am.cancel(alarmIntent);
         }//if
@@ -55,8 +68,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume(){
         super.onResume();
-
-        ((TextView) findViewById(R.id.scouter)).setText(metrics);
     }//onResume
 
     static void batteryFull(PendingIntent pIntent, Context context){
@@ -68,7 +79,7 @@ public class MainActivity extends Activity {
                 .setContentIntent(pIntent)
                 .setPriority(Notification.PRIORITY_HIGH)
                 .setVibrate(MainActivity.vibrate)
-                .setLights(MainActivity.color, 1000, 1000)
+                .setLights(Color.MAGENTA, 1000, 1000)
                 .build();
 
         NotificationManager manager =
