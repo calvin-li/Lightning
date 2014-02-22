@@ -4,8 +4,8 @@
     <string name="app_name">Lightning</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
-    <integer-array array name="colors_array">
-        <item> android:Color.MAGENTA </item>
+    <string-array name="colors_array">
+        <item>White</item>
         <item>Yellow</item>
         <item>Green</item>
         <item>Cyan</item>
@@ -15,6 +15,6 @@
         <item>Light Gray</item>
         <item>Gray</item>
         <item>Dark Gray</item>
-    </integer-array>
+    </string-array>
 
 </resources>

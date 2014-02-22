@@ -34,7 +34,19 @@ public class MainActivity extends Activity {
     static boolean alarming = true;
     static boolean vibrating = true;
     static boolean lightsOn = true;
-    static int colorNumber;
+    static int[] colorlist = {
+        Color.WHITE,
+        Color.YELLOW,
+        Color.GREEN,
+        Color.CYAN,
+        Color.BLUE,
+        Color.MAGENTA,
+        Color.RED,
+        Color.LTGRAY,
+        Color.GRAY,
+        Color.DKGRAY
+    };
+    static int color = Color.MAGENTA;
 
     protected static int checkDelay = 5000;
     protected PendingIntent pIntent;
@@ -94,11 +106,7 @@ public class MainActivity extends Activity {
         colorSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Context context = getApplicationContext();
-                int duration = Toast.LENGTH_SHORT;
-
-                Toast toast = Toast.makeText(context, String.valueOf(parent.getItemAtPosition(position)), duration);
-                toast.show();
+                color = colorlist[position];
             }//onItemSelected
 
             @Override
@@ -121,9 +129,9 @@ public class MainActivity extends Activity {
         if(vibrating)
             vibrate = MainActivity.vibrate;
 
-        int color = Color.BLACK;
+        int color = Color.TRANSPARENT;
         if(lightsOn)
-            color = Color.MAGENTA;
+            color = MainActivity.color;
 
         Notification notification = new Notification.Builder(context)
                 .setSmallIcon(R.drawable.ic_launcher)
