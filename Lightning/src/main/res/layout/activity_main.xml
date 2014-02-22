@@ -158,11 +158,28 @@
                     android:layout_marginBottom="6dp"
                     android:textColor="#FFFFFF" />
 
-                <SeekBar
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/full"
-                    android:clickable="false"/>
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent">
+
+                    <SeekBar
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:id="@+id/full"
+                        android:max="100"
+                        android:progress="100"
+                        android:clickable="false"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0"
+                        android:text="100"
+                        android:singleLine="true"
+                        android:id="@+id/fullNumber"/>
+                </LinearLayout>
 
             </LinearLayout>
 

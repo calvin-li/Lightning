@@ -7,9 +7,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Color;
-import android.os.BatteryManager;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.view.View;
@@ -17,10 +15,10 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
@@ -34,19 +32,20 @@ public class MainActivity extends Activity {
     static boolean alarming = true;
     static boolean vibrating = true;
     static boolean lightsOn = true;
-    static int[] colorlist = {
+    static int[] colorList = {
+        Color.MAGENTA,
         Color.WHITE,
         Color.YELLOW,
         Color.GREEN,
         Color.CYAN,
         Color.BLUE,
-        Color.MAGENTA,
         Color.RED,
         Color.LTGRAY,
         Color.GRAY,
         Color.DKGRAY
     };
     static int color = Color.MAGENTA;
+    static int fullLevel = 100;
 
     protected static int checkDelay = 5000;
     protected PendingIntent pIntent;
@@ -106,14 +105,36 @@ public class MainActivity extends Activity {
         colorSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                color = colorlist[position];
+                color = colorList[position];
             }//onItemSelected
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
                 //do nothing
             }//onNothingSelected
-        });
+        });//setOnItemSelectedListener
+
+        SeekBar full = (SeekBar) findViewById(R.id.full);
+        final TextView fullNumber = (TextView) findViewById(R.id.fullNumber);
+        fullNumber.setText(String.valueOf(fullLevel));
+        full.setProgress(fullLevel);
+        full.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                fullLevel = progress;
+                fullModifier = (double)progress / seekBar.getMax();
+                fullNumber.setText(String.valueOf(progress));
+            }//onProgressChanged
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                //do nothing
+            }//onStartTrackingTouch
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                //do nothing
+            }//onStopTrackingTouch
+        });//setOnSeekBarChangeListener
     }//OnCreate
 
     @Override
