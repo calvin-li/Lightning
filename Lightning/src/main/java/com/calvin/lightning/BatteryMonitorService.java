@@ -32,6 +32,7 @@ public class BatteryMonitorService extends IntentService {
         int  scale= battery.getIntExtra(BatteryManager.EXTRA_SCALE,-1);
         double fullPower = MainActivity.fullModifier * scale;
 
+        //TODO: remove metrics from final build
         Calendar cal = Calendar.getInstance();
         String time =
                 cal.get(Calendar.HOUR_OF_DAY) +
@@ -42,12 +43,15 @@ public class BatteryMonitorService extends IntentService {
                 time + " " + level + " " + scale + " " + fullPower + " " + MainActivity.full;
         System.out.println(MainActivity.metrics);
 
+        MainActivity.batteryFull(pIntent, this);
+/*
         if(MainActivity.full && level < fullPower)
             MainActivity.full = false;
 
         else if(!MainActivity.full && level >= fullPower){
             MainActivity.batteryFull(pIntent, this);
         }//if
+*/
     }//batteryCheck
 
 }//BatteryMonitorService

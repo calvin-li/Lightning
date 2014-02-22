@@ -12,26 +12,31 @@ import android.graphics.Color;
 import android.os.BatteryManager;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
     static boolean full = true;
-    static String[] color = new String[]{
-        "White", "Yellow", "Green", "Cyan", "Blue",
-        "Magenta", "Red", "Light Gray", "Gray", "Dark Gray"
-    };
-    static int colorNumber;
     static long[] vibrate = new long[]{100, 500, 500, 500};
     static double fullModifier = 1.0;
     static String metrics = "";
     static AlarmManager am;
     static PendingIntent alarmIntent;
 
-    protected static int checkDelay = 5000;
+    static boolean alarming = true;
+    static boolean vibrating = true;
+    static boolean lightsOn = true;
+    static int colorNumber;
 
+    protected static int checkDelay = 5000;
     protected PendingIntent pIntent;
 
     @Override
@@ -45,13 +50,6 @@ public class MainActivity extends Activity {
         serviceIntent.putExtra("alarmIntent",alarmIntent);
         serviceIntent.putExtra("pIntent",pIntent);
 
-        //Layout elements here
-        Spinner spinner = (Spinner) findViewById(R.id.colorSpinner);
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                R.array.colors_array, R.layout.spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(adapter);
-
         if(alarmIntent != null && am != null){
             am.cancel(alarmIntent);
         }//if
@@ -63,6 +61,51 @@ public class MainActivity extends Activity {
                 checkDelay,
                 alarmIntent);
 
+        Switch alarmSwitch = (Switch) findViewById(R.id.alarmSwitch);
+        alarmSwitch.setChecked(alarming);
+        alarmSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean on) {
+                alarming = on;
+        }});//setOnCheckedChangeListener
+
+        CheckBox vibrateCheck = (CheckBox) findViewById(R.id.vibrateCheck);
+        vibrateCheck.setChecked(vibrating);
+        vibrateCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean on) {
+                vibrating = on;
+        }});//setOnCheckedChangeListener
+
+        CheckBox LEDCheck = (CheckBox) findViewById(R.id.LEDCheck);
+        LEDCheck.setChecked(lightsOn);
+        LEDCheck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean on) {
+                lightsOn = on;
+        }});//setOnCheckedChangeListener
+
+        Spinner colorSpinner = (Spinner) findViewById(R.id.colorSpinner);
+        colorSpinner.setPrompt("Choose a Color");
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.colors_array, R.layout.spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        colorSpinner.setAdapter(adapter);
+        colorSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Context context = getApplicationContext();
+                int duration = Toast.LENGTH_SHORT;
+
+                Toast toast = Toast.makeText(context, String.valueOf(parent.getItemAtPosition(position)), duration);
+                toast.show();
+            }//onItemSelected
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                //do nothing
+            }//onNothingSelected
+        });
     }//OnCreate
 
     @Override
@@ -72,14 +115,24 @@ public class MainActivity extends Activity {
 
     static void batteryFull(PendingIntent pIntent, Context context){
         MainActivity.full = true;
+        if(!alarming) return;
+
+        long[] vibrate = new long[] {0, 0, 0, 0};
+        if(vibrating)
+            vibrate = MainActivity.vibrate;
+
+        int color = Color.BLACK;
+        if(lightsOn)
+            color = Color.MAGENTA;
+
         Notification notification = new Notification.Builder(context)
                 .setSmallIcon(R.drawable.ic_launcher)
                 .setContentTitle("Your battery is full!")
                 .setContentText("Unplug to save power.")
                 .setContentIntent(pIntent)
                 .setPriority(Notification.PRIORITY_HIGH)
-                .setVibrate(MainActivity.vibrate)
-                .setLights(Color.MAGENTA, 1000, 1000)
+                .setVibrate(vibrate)
+                .setLights(color, 1000, 1000)
                 .build();
 
         NotificationManager manager =
